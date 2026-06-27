@@ -910,6 +910,15 @@ textarea {
   place-items: center;
   font-weight: 700;
   font-size: 1rem;
+  overflow: hidden;
+}
+
+.conversation-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .conversation-info h3 {
