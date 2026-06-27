@@ -83,9 +83,7 @@ def current_user(request):
 
     if request.user.is_authenticated:
         profile = StudentProfile.objects.filter(user=request.user).first()
-        profile_image = None
-        if profile and profile.profile_image:
-            profile_image = profile.profile_image
+        profile_image = profile.profile_image.url if profile and profile.profile_image else None
 
         return Response({
             "user": {
