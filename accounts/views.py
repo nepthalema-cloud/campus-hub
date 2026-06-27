@@ -85,7 +85,7 @@ def current_user(request):
         profile = StudentProfile.objects.filter(user=request.user).first()
         profile_image = None
         if profile and profile.profile_image:
-            profile_image = profile.profile_image.url
+            profile_image = profile.profile_image
 
         return Response({
             "user": {
@@ -493,14 +493,13 @@ def create_profile(request):
         )
 
     serializer = StudentProfileSerializer(
-        data=request.data
+        data=request.data,
+        context={"request": request}
     )
 
     if serializer.is_valid():
 
-        serializer.save(
-            user=request.user
-        )
+        serializer.save()
 
         return Response(
             {

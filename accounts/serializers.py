@@ -163,6 +163,11 @@ class StudentProfileSerializer(
         
         return value
 
+    def create(self, validated_data):
+        request = self.context.get("request")
+        user = request.user
+        return StudentProfile.objects.create(user=user, **validated_data)
+
 
 class MessageSerializer(serializers.ModelSerializer):
     sender_id = serializers.IntegerField(source="sender.id", read_only=True)
