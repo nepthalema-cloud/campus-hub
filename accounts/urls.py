@@ -1,0 +1,116 @@
+from django.urls import path
+from .views import (
+    current_user,
+    delete_account,
+    test_api,
+    register,
+    login_user,
+    logout_user,
+    profile,
+    create_profile,
+    update_profile,
+    student_directory,
+    send_connection_request,
+    accept_connection,
+    reject_connection,
+    remove_connection,
+    connection_status_lists,
+    message_conversation,
+    send_message,
+    edit_message,
+    delete_message,
+    unread_message_counts,
+    csrf_token
+)
+
+urlpatterns = [
+
+    path(
+        "test/",
+        test_api
+    ),
+
+    path(
+        "register/",
+        register
+    ),
+
+    path(
+        "login/",
+        login_user
+    ),
+    path(
+        "me/",
+        current_user
+    ),
+    path(
+        "logout/",
+         logout_user
+    ),
+    path(
+    "profile/",
+    profile
+    ),
+    path(
+    "profile/create/",
+    create_profile
+    ),
+    path(
+    "profile/update/",
+    update_profile
+    ),
+    path(
+    "directory/",
+    student_directory
+    ),
+    path(
+    "connections/",
+    connection_status_lists
+    ),
+    path(
+    "connections/send/<int:id>/",
+    send_connection_request
+    ),
+    path(
+    "connections/accept/<int:id>/",
+    accept_connection
+    ),
+    path(
+    "connections/reject/<int:id>/",
+    reject_connection
+    ),
+    path(
+    "connections/remove/<int:id>/",
+    remove_connection
+    ),
+    path(
+    "messages/<int:user_id>/",
+    message_conversation
+    ),
+    path(
+    "messages/send/<int:user_id>/",
+    send_message
+    ),
+    path(
+    "messages/edit/<int:message_id>/",
+    edit_message
+    ),
+    path(
+    "messages/delete/<int:message_id>/",
+    delete_message
+    ),
+    path(
+    "messages/unread-count/",
+    unread_message_counts
+    ),
+    path(
+    "csrf/",
+    csrf_token
+    ),
+    path(
+    "account/delete/",
+    delete_account,
+    name="delete-account"
+)
+
+]
