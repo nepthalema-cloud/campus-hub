@@ -33,7 +33,9 @@ def register(request):
     )
 
     if serializer.is_valid():
-        serializer.save()
+        user = serializer.save()
+        print("Created:", user.username)
+        print("User count:", User.objects.count())
         return Response(
             {"message": "User created"},
             status=201,
@@ -52,6 +54,9 @@ def register(request):
 def login_user(request):
     username = request.data.get("username")
     password = request.data.get("password")
+
+    print("Attempting login:", username)
+    print("Users:", list(User.objects.values_list("username", flat=True)))
 
     user = authenticate(
         request,
