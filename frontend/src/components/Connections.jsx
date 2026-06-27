@@ -21,7 +21,12 @@ function Connections() {
       const newItem = newArr[index];
       return (
         item.id === newItem.id &&
-        item.status === newItem.status
+        item.status === newItem.status &&
+        item.first_name === newItem.first_name &&
+        item.last_name === newItem.last_name &&
+        item.department === newItem.department &&
+        item.year === newItem.year &&
+        item.profile_image === newItem.profile_image
       );
     });
   };

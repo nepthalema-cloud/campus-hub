@@ -32,7 +32,12 @@ function StudentDirectory() {
       const newProfile = newProfiles[index];
       return (
         profile.id === newProfile.id &&
-        profile.connection_status === newProfile.connection_status
+        profile.connection_status === newProfile.connection_status &&
+        profile.first_name === newProfile.first_name &&
+        profile.last_name === newProfile.last_name &&
+        profile.department === newProfile.department &&
+        profile.year === newProfile.year &&
+        profile.profile_image === newProfile.profile_image
       );
     });
   };
