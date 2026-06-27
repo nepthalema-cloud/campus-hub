@@ -4,13 +4,16 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.middleware.csrf import get_token
 from django.db import IntegrityError
 from django.db.models import Count, Q
+from django.conf import settings
+from django.core.files.storage import default_storage
+import os
 from django.utils import timezone
 from .serializers import (RegisterSerializer, StudentProfileSerializer, MessageSerializer)
-from rest_framework.permissions import IsAuthenticated
 
 from .models import Connection, Message, StudentProfile
 
@@ -591,4 +594,17 @@ def delete_account(request):
 
     return Response({
         "message": "Account deleted successfully"
+    })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def debug_storage(request):
+
+    return Response({
+        "DEBUG": settings.DEBUG,
+        "env_DEBUG": os.environ.get("DEBUG"),
+        "STORAGES": settings.STORAGES,
+        "DEFAULT_FILE_STORAGE": getattr(settings, "DEFAULT_FILE_STORAGE", None),
+        "default_storage_class": type(default_storage).__name__,
+        "profile_image_storage_class": type(StudentProfile._meta.get_field("profile_image").storage).__name__
     })

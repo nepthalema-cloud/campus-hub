@@ -20,7 +20,8 @@ from .views import (
     edit_message,
     delete_message,
     unread_message_counts,
-    csrf_token
+    csrf_token,
+    debug_storage
 )
 
 urlpatterns = [
@@ -111,6 +112,10 @@ urlpatterns = [
     "account/delete/",
     delete_account,
     name="delete-account"
-)
+    ),
+    path(
+        "debug-storage/",
+        debug_storage
+    )
 
 ]
