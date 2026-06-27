@@ -149,6 +149,9 @@ if not DEBUG:
         'default': {
             'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
         },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
     }
 else:
     MEDIA_URL = '/media/'
