@@ -29,7 +29,7 @@ A full-stack student networking platform built with Django REST Framework and Re
 ## Project Structure
 
 ```
-login-system/
+campus-hub/
 ├── accounts/              # Django app (models, views, serializers, URLs)
 ├── backend/              # Django project settings
 ├── frontend/             # React Vite application
@@ -50,7 +50,7 @@ login-system/
 
 1. **Navigate to the project root**
    ```bash
-   cd login-system
+   cd campus-hub
    ```
 
 2. **Create a virtual environment**
