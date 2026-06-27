@@ -295,8 +295,15 @@ def remove_connection(request, id):
         if not connection:
             return Response({"message": "Connection not found."}, status=404)
 
-    if request.user not in [connection.from_user, connection.to_user]:
-        return Response({"message": "You are not authorized to remove this connection."}, status=403)
+    # Authorization: only sender can cancel pending requests, either party can remove connected connections
+    if connection.status == Connection.STATUS_PENDING:
+        # Only the sender (from_user) can cancel pending requests
+        if request.user.id != connection.from_user.id:
+            return Response({"message": "You are not authorized to cancel this request."}, status=403)
+    else:
+        # Either party can remove established connections
+        if request.user.id not in [connection.from_user.id, connection.to_user.id]:
+            return Response({"message": "You are not authorized to remove this connection."}, status=403)
 
     connection.delete()
     return Response({"message": "Connection removed."})
