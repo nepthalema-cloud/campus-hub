@@ -85,6 +85,15 @@ def current_user(request):
         profile = StudentProfile.objects.filter(user=request.user).first()
         profile_image = profile.profile_image.url if profile and profile.profile_image else None
 
+        # Diagnostic information
+        diagnostic = {}
+        if profile and profile.profile_image:
+            diagnostic = {
+                "profile_image_name": profile.profile_image.name,
+                "profile_image_url": profile.profile_image.url,
+                "storage_class": type(profile.profile_image.storage).__name__,
+            }
+
         return Response({
             "user": {
                 "id": request.user.id,
@@ -92,7 +101,8 @@ def current_user(request):
                 "first_name": profile.first_name if profile else "",
                 "last_name": profile.last_name if profile else "",
                 "profile_image": profile_image,
-            }
+            },
+            "diagnostic": diagnostic
         })
 
     return Response(
