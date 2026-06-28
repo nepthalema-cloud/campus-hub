@@ -65,7 +65,23 @@ function EditProfile() {
 
       navigate("/profile");
     } catch (error) {
-      setError("Unable to save profile. Please try again.");
+      const errorData = error.response?.data;
+      let errorMessage = "Unable to save profile. Please try again.";
+
+      if (errorData) {
+        if (typeof errorData === "string") {
+          errorMessage = errorData;
+        } else if (typeof errorData === "object") {
+          const firstField = Object.keys(errorData)[0];
+          if (firstField && Array.isArray(errorData[firstField])) {
+            errorMessage = errorData[firstField][0];
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+        }
+      }
+
+      setError(errorMessage);
     }
   }
 

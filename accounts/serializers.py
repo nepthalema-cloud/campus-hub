@@ -150,17 +150,37 @@ class StudentProfileSerializer(
     def validate_profile_image(self, value):
         if not value:
             return value
-        
+
         # Check file size (max 5MB)
         max_size = 5 * 1024 * 1024  # 5MB
         if value.size > max_size:
             raise ValidationError("Profile image cannot be larger than 5MB.")
-        
+
         # Check file type
         allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp']
         if value.content_type not in allowed_types:
             raise ValidationError("Profile image must be a valid image file (JPEG, PNG, GIF, or WebP).")
-        
+
+        return value
+
+    def validate_email(self, value):
+        if not value:
+            return value
+
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return value
+
+        # Check if email already exists for another profile
+        queryset = StudentProfile.objects.filter(email__iexact=value)
+
+        # On update, exclude current profile
+        if self.instance:
+            queryset = queryset.exclude(id=self.instance.id)
+
+        if queryset.exists():
+            raise ValidationError("A profile with this email already exists.")
+
         return value
 
     def create(self, validated_data):

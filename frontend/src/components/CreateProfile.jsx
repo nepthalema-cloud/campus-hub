@@ -46,7 +46,23 @@ function CreateProfile() {
 
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data || "Failed to create profile");
+      const errorData = err.response?.data;
+      let errorMessage = "Failed to create profile";
+
+      if (errorData) {
+        if (typeof errorData === "string") {
+          errorMessage = errorData;
+        } else if (typeof errorData === "object") {
+          const firstField = Object.keys(errorData)[0];
+          if (firstField && Array.isArray(errorData[firstField])) {
+            errorMessage = errorData[firstField][0];
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+        }
+      }
+
+      setError(errorMessage);
     }
   }
 
@@ -137,7 +153,7 @@ function CreateProfile() {
         </div>
       </div>
 
-      {error && <div className="alert alert-error">{JSON.stringify(error)}</div>}
+      {error && <div className="alert alert-error">{error}</div>}
 
       <div className="actions">
         <button className="button button-primary" type="button" onClick={createProfile}>
