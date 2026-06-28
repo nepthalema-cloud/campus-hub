@@ -172,8 +172,8 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://localhost:5174,https://campus-hub-ruby.vercel.app').split(',')
 
 CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SAMESITE = "Lax" if DEBUG else "None"
 SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False') == 'True'
 
-CSRF_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = "Lax" if DEBUG else "None"
 CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False') == 'True'
