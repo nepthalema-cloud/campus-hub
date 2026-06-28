@@ -25,6 +25,8 @@ from .models import Connection, Message, StudentProfile, PasswordResetToken
 
 logger = logging.getLogger(__name__)
 
+logger.warning("accounts.views imported")
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def test_api(request):
