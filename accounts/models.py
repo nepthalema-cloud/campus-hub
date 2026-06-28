@@ -124,3 +124,31 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message {self.id}: {self.sender.username} -> {self.receiver.username}"
+
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='password_reset_tokens'
+    )
+    token = models.CharField(
+        max_length=255,
+        unique=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    def mark_used(self):
+        self.used = True
+        self.save(update_fields=['used'])
+
+    def __str__(self):
+        return f"PasswordResetToken for {self.user.username}"
