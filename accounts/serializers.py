@@ -2,7 +2,8 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.core.exceptions import ValidationError
-from .models import Connection, Message, StudentProfile
+from django.contrib.auth.password_validation import validate_password
+from .models import Connection, Message, StudentProfile, PasswordResetToken
 
 class RegisterSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
@@ -250,3 +251,54 @@ class MessageSerializer(serializers.ModelSerializer):
         profile = StudentProfile.objects.filter(user=obj.receiver).first()
         return profile.profile_image.url if profile and profile.profile_image else None
 
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def save(self):
+        return self.validated_data['email']
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate_token(self, value):
+        if not value:
+            raise serializers.ValidationError("Token is required.")
+        return value
+
+    def validate(self, attrs):
+        token = attrs.get('token')
+        new_password = attrs.get('new_password')
+        confirm_password = attrs.get('confirm_password')
+
+        if not new_password or not confirm_password:
+            raise serializers.ValidationError("Both password fields are required.")
+
+        if new_password != confirm_password:
+            raise serializers.ValidationError("Passwords do not match.")
+
+        reset_token = PasswordResetToken.objects.filter(token=token).select_related("user").first()
+        if not reset_token or reset_token.used or reset_token.is_expired():
+            raise serializers.ValidationError("Invalid or expired token.")
+
+        try:
+            validate_password(new_password, user=reset_token.user)
+        except ValidationError as e:
+            raise serializers.ValidationError(e.messages)
+
+        attrs['reset_token'] = reset_token
+        return attrs
+
+    def save(self):
+        reset_token = self.validated_data['reset_token']
+        new_password = self.validated_data['new_password']
+        user = reset_token.user
+
+        user.set_password(new_password)
+        user.save()
+        reset_token.mark_used()
+
+        return user

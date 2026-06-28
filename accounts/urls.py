@@ -22,7 +22,9 @@ from .views import (
     delete_message,
     unread_message_counts,
     csrf_token,
-    debug_storage
+    debug_storage,
+    forgot_password,
+    reset_password
 )
 
 urlpatterns = [
@@ -121,6 +123,14 @@ urlpatterns = [
     path(
         "debug-storage/",
         debug_storage
+    ),
+    path(
+        "forgot-password/",
+        forgot_password
+    ),
+    path(
+        "reset-password/",
+        reset_password
     )
 
 ]

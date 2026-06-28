@@ -12,12 +12,14 @@ from django.db.models import Count, Q
 from django.conf import settings
 from django.core.files.storage import default_storage
 import os
+import secrets
+from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from .serializers import (RegisterSerializer, StudentProfileSerializer, MessageSerializer)
+from .serializers import (RegisterSerializer, StudentProfileSerializer, MessageSerializer, ForgotPasswordSerializer, ResetPasswordSerializer)
 
-from .models import Connection, Message, StudentProfile
+from .models import Connection, Message, StudentProfile, PasswordResetToken
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -646,4 +648,60 @@ def debug_storage(request):
         "DEFAULT_FILE_STORAGE": getattr(settings, "DEFAULT_FILE_STORAGE", None),
         "default_storage_class": type(default_storage).__name__,
         "profile_image_storage_class": type(StudentProfile._meta.get_field("profile_image").storage).__name__
+    })
+
+
+@csrf_exempt
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([])
+def forgot_password(request):
+    serializer = ForgotPasswordSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
+
+    email = serializer.save()
+    profile = StudentProfile.objects.filter(email__iexact=email).first()
+
+    if profile:
+        user = profile.user
+
+        # Invalidate existing unused tokens for this user
+        PasswordResetToken.objects.filter(
+            user=user,
+            used=False
+        ).update(used=True)
+
+        token = secrets.token_urlsafe(32)
+        expires_at = timezone.now() + timedelta(hours=getattr(settings, 'PASSWORD_RESET_TOKEN_EXPIRE_HOURS', 1))
+
+        PasswordResetToken.objects.create(
+            user=user,
+            token=token,
+            expires_at=expires_at
+        )
+
+        # TODO: Send email with reset link
+        # Email will be sent in a separate implementation phase
+
+    return Response({
+        "message": "If an account with this email exists, you will receive a password reset link."
+    })
+
+
+@csrf_exempt
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([])
+def reset_password(request):
+    serializer = ResetPasswordSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
+
+    serializer.save()
+
+    return Response({
+        "message": "Password reset successfully."
     })
