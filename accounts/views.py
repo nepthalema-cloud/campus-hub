@@ -666,14 +666,14 @@ def forgot_password(request):
         return Response(serializer.errors, status=400)
 
     email = serializer.save()
-    logger.info(f"forgot_password called with email: {email}")
+    logger.warning(f"forgot_password called with email: {email}")
 
     profile = StudentProfile.objects.filter(email__iexact=email).first()
-    logger.info(f"StudentProfile found: {profile is not None}")
+    logger.warning(f"StudentProfile found: {profile is not None}")
 
     if profile:
         user = profile.user
-        logger.info(f"Profile found for user: {user.username}")
+        logger.warning(f"Profile found for user: {user.username}")
 
         # Invalidate existing unused tokens for this user
         PasswordResetToken.objects.filter(
@@ -684,7 +684,7 @@ def forgot_password(request):
         token = secrets.token_urlsafe(32)
         expires_at = timezone.now() + timedelta(hours=getattr(settings, 'PASSWORD_RESET_TOKEN_EXPIRE_HOURS', 1))
 
-        logger.info(f"Before PasswordResetToken.objects.create() for user {user.username}")
+        logger.warning(f"Before PasswordResetToken.objects.create() for user {user.username}")
 
         reset_token = PasswordResetToken.objects.create(
             user=user,
@@ -692,7 +692,7 @@ def forgot_password(request):
             expires_at=expires_at
         )
 
-        logger.info(f"After PasswordResetToken.objects.create() - Token ID: {reset_token.id}")
+        logger.warning(f"After PasswordResetToken.objects.create() - Token ID: {reset_token.id}")
 
         # Send password reset email
         subject = "Campus Hub Password Reset"
@@ -707,7 +707,8 @@ def forgot_password(request):
         from_email = settings.DEFAULT_FROM_EMAIL
         recipient_list = [email]
 
-        logger.info(f"Before send_mail() to {email}")
+        logger.info(repr(settings.EMAIL_BACKEND))
+        logger.warning(f"Before send_mail() to {email}")
 
         try:
             send_mail(
@@ -717,7 +718,7 @@ def forgot_password(request):
                 recipient_list,
                 fail_silently=False,
             )
-            logger.info(f"send_mail() succeeded for {email}")
+            logger.warning(f"send_mail() succeeded for {email}")
         except Exception as e:
             logger.error(f"Failed to send password reset email to {email}: {e}", exc_info=True)
             # Continue with generic response to maintain security
