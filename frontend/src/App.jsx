@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./components/Profile";
 import EditProfile from "./components/EditProfile";
 import CreateProfile from "./components/CreateProfile";
+import ChangePassword from "./components/ChangePassword";
 import StudentDirectory from "./components/StudentDirectory";
 import Connections from "./components/Connections";
 import Messages from "./components/Messages";
@@ -69,6 +70,14 @@ function App() {
           element={
             <ProtectedRoute>
               <EditProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <ProtectedRoute>
+              <ChangePassword />
             </ProtectedRoute>
           }
         />

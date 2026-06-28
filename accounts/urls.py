@@ -6,6 +6,7 @@ from .views import (
     register,
     login_user,
     logout_user,
+    change_password,
     profile,
     create_profile,
     update_profile,
@@ -47,6 +48,10 @@ urlpatterns = [
     path(
         "logout/",
          logout_user
+    ),
+    path(
+        "password/change/",
+        change_password
     ),
     path(
     "profile/",

@@ -121,6 +121,9 @@ function Profile() {
         <Link className="button button-secondary" to="/profile/edit">
           Edit Profile
         </Link>
+        <Link className="button button-secondary" to="/change-password">
+          Change Password
+        </Link>
         <button className="button button-danger" type="button" onClick={handleDelete}>
           Delete Account
         </button>

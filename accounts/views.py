@@ -1,4 +1,4 @@
-from django.contrib.auth import (authenticate,login,logout)
+from django.contrib.auth import (authenticate,login,logout,update_session_auth_hash)
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, parser_classes
@@ -13,6 +13,8 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 import os
 from django.utils import timezone
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from .serializers import (RegisterSerializer, StudentProfileSerializer, MessageSerializer)
 
 from .models import Connection, Message, StudentProfile
@@ -122,6 +124,36 @@ def logout_user(request):
     return Response({
         "message": "Logged out"
     })
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    user = request.user
+
+    current_password = request.data.get("current_password")
+    new_password = request.data.get("new_password")
+    confirm_password = request.data.get("confirm_password")
+
+    if not current_password or not new_password or not confirm_password:
+        return Response({"message": "All password fields are required."}, status=400)
+
+    if not user.check_password(current_password):
+        return Response({"message": "Current password is incorrect."}, status=400)
+
+    if new_password != confirm_password:
+        return Response({"message": "New passwords do not match."}, status=400)
+
+    try:
+        validate_password(new_password, user=user)
+    except ValidationError as e:
+        return Response({"message": str(e)}, status=400)
+
+    user.set_password(new_password)
+    user.save()
+
+    update_session_auth_hash(request, user)
+
+    return Response({"message": "Password changed successfully."})
 
 @ensure_csrf_cookie
 @api_view(["GET"])
