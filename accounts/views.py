@@ -660,74 +660,78 @@ def debug_storage(request):
 @authentication_classes([])
 @permission_classes([])
 def forgot_password(request):
-    serializer = ForgotPasswordSerializer(data=request.data)
+    try:
+        serializer = ForgotPasswordSerializer(data=request.data)
 
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=400)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
 
-    email = serializer.save()
-    logger.warning(f"forgot_password called with email: {email}")
+        email = serializer.save()
+        logger.warning(f"forgot_password called with email: {email}")
 
-    profile = StudentProfile.objects.filter(email__iexact=email).first()
-    logger.warning(f"StudentProfile found: {profile is not None}")
+        profile = StudentProfile.objects.filter(email__iexact=email).first()
+        logger.warning(f"StudentProfile found: {profile is not None}")
 
-    if profile:
-        user = profile.user
-        logger.warning(f"Profile found for user: {user.username}")
+        if profile:
+            user = profile.user
+            logger.warning(f"Profile found for user: {user.username}")
 
-        # Invalidate existing unused tokens for this user
-        PasswordResetToken.objects.filter(
-            user=user,
-            used=False
-        ).update(used=True)
+            # Invalidate existing unused tokens for this user
+            PasswordResetToken.objects.filter(
+                user=user,
+                used=False
+            ).update(used=True)
 
-        token = secrets.token_urlsafe(32)
-        expires_at = timezone.now() + timedelta(hours=getattr(settings, 'PASSWORD_RESET_TOKEN_EXPIRE_HOURS', 1))
+            token = secrets.token_urlsafe(32)
+            expires_at = timezone.now() + timedelta(hours=getattr(settings, 'PASSWORD_RESET_TOKEN_EXPIRE_HOURS', 1))
 
-        logger.warning(f"Before PasswordResetToken.objects.create() for user {user.username}")
+            logger.warning(f"Before PasswordResetToken.objects.create() for user {user.username}")
 
-        reset_token = PasswordResetToken.objects.create(
-            user=user,
-            token=token,
-            expires_at=expires_at
-        )
-
-        logger.warning(f"After PasswordResetToken.objects.create() - Token ID: {reset_token.id}")
-
-        # Send password reset email
-        subject = "Campus Hub Password Reset"
-        message = (
-            f"Hello {user.username},\n\n"
-            f"You requested a password reset for your Campus Hub account.\n\n"
-            f"Your password reset token is: {token}\n\n"
-            f"This token will expire in {getattr(settings, 'PASSWORD_RESET_TOKEN_EXPIRE_HOURS', 1)} hour(s).\n\n"
-            f"If you did not request this password reset, please ignore this email.\n\n"
-            f"Campus Hub"
-        )
-        from_email = settings.DEFAULT_FROM_EMAIL
-        recipient_list = [email]
-
-        logger.info(repr(settings.EMAIL_BACKEND))
-        logger.warning(f"Before send_mail() to {email}")
-
-        try:
-            send_mail(
-                subject,
-                message,
-                from_email,
-                recipient_list,
-                fail_silently=False,
+            reset_token = PasswordResetToken.objects.create(
+                user=user,
+                token=token,
+                expires_at=expires_at
             )
-            logger.warning(f"send_mail() succeeded for {email}")
-        except Exception as e:
-            logger.error(f"Failed to send password reset email to {email}: {e}", exc_info=True)
-            # Continue with generic response to maintain security
-    else:
-        logger.info(f"No profile found for email: {email}")
 
-    return Response({
-        "message": "If an account with this email exists, you will receive a password reset link."
-    })
+            logger.warning(f"After PasswordResetToken.objects.create() - Token ID: {reset_token.id}")
+
+            # Send password reset email
+            subject = "Campus Hub Password Reset"
+            message = (
+                f"Hello {user.username},\n\n"
+                f"You requested a password reset for your Campus Hub account.\n\n"
+                f"Your password reset token is: {token}\n\n"
+                f"This token will expire in {getattr(settings, 'PASSWORD_RESET_TOKEN_EXPIRE_HOURS', 1)} hour(s).\n\n"
+                f"If you did not request this password reset, please ignore this email.\n\n"
+                f"Campus Hub"
+            )
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [email]
+
+            logger.info(repr(settings.EMAIL_BACKEND))
+            logger.warning(f"Before send_mail() to {email}")
+
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    from_email,
+                    recipient_list,
+                    fail_silently=False,
+                )
+                logger.warning(f"send_mail() succeeded for {email}")
+            except Exception as e:
+                logger.error(f"Failed to send password reset email to {email}: {e}", exc_info=True)
+                # Continue with generic response to maintain security
+        else:
+            logger.info(f"No profile found for email: {email}")
+
+        return Response({
+            "message": "If an account with this email exists, you will receive a password reset link."
+        })
+    except Exception:
+        logger.exception("forgot_password crashed")
+        raise
 
 
 @csrf_exempt
