@@ -11,8 +11,10 @@ from django.db import IntegrityError
 from django.db.models import Count, Q
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.core.mail import send_mail
 import os
 import secrets
+import logging
 from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth.password_validation import validate_password
@@ -20,6 +22,8 @@ from django.core.exceptions import ValidationError
 from .serializers import (RegisterSerializer, StudentProfileSerializer, MessageSerializer, ForgotPasswordSerializer, ResetPasswordSerializer)
 
 from .models import Connection, Message, StudentProfile, PasswordResetToken
+
+logger = logging.getLogger(__name__)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -682,8 +686,30 @@ def forgot_password(request):
             expires_at=expires_at
         )
 
-        # TODO: Send email with reset link
-        # Email will be sent in a separate implementation phase
+        # Send password reset email
+        subject = "Campus Hub Password Reset"
+        message = (
+            f"Hello {user.username},\n\n"
+            f"You requested a password reset for your Campus Hub account.\n\n"
+            f"Your password reset token is: {token}\n\n"
+            f"This token will expire in {getattr(settings, 'PASSWORD_RESET_TOKEN_EXPIRE_HOURS', 1)} hour(s).\n\n"
+            f"If you did not request this password reset, please ignore this email.\n\n"
+            f"Campus Hub"
+        )
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [email]
+
+        try:
+            send_mail(
+                subject,
+                message,
+                from_email,
+                recipient_list,
+                fail_silently=False,
+            )
+        except Exception as e:
+            logger.error(f"Failed to send password reset email to {email}: {e}")
+            # Continue with generic response to maintain security
 
     return Response({
         "message": "If an account with this email exists, you will receive a password reset link."
