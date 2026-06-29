@@ -36,7 +36,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      {!isLandingPage && <Navbar />}
+      {!isLandingPage && !["/login", "/register"].includes(location.pathname) && <Navbar />}
       {notification && (
         <Notification
           message={notification}

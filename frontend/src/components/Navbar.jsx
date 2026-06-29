@@ -100,9 +100,6 @@ function Navbar() {
 
   const displayName = user?.first_name || user?.username || "Student";
 
-  if (["/login", "/register"].includes(location.pathname)) {
-    return null;
-  }
 
   return (
     <nav className="navbar">
